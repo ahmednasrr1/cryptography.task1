@@ -1,0 +1,99 @@
+import re
+
+class PlayfairCipher:
+    def __init__(self, keyword):
+        self.matrix = self.generate_playfair_matrix(keyword)
+
+    def generate_playfair_matrix(self, keyword):
+        keyword = keyword.upper().replace("J", "I")  
+        seen = set()
+        matrix = []
+        alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
+
+        
+        for char in keyword + alphabet:
+            if char not in seen:
+                seen.add(char)
+                matrix.append(char)
+
+       
+        return [matrix[i * 5:(i + 1) * 5] for i in range(5)]
+
+    def display_matrix(self):
+        print("\nPlayfair Cipher Matrix:")
+        for row in self.matrix:
+            print(" ".join(row))
+        print()
+
+    def preprocess_text(self, text, encrypt=True):
+        text = re.sub(r'[^A-Za-z]', '', text).upper().replace("J", "I")
+        pairs = []
+        i = 0
+
+        while i < len(text):
+            a = text[i]
+            if i + 1 < len(text):
+                b = text[i + 1]
+                if a == b:
+                    pairs.append((a, 'X'))
+                    i += 1
+                else:
+                    pairs.append((a, b))
+                    i += 2
+            else:
+                pairs.append((a, 'X'))
+                i += 1
+        return pairs
+
+    def find_position(self, letter):
+        for row in range(5):
+            for col in range(5):
+                if self.matrix[row][col] == letter:
+                    return row, col
+        return None
+
+    def encrypt_decrypt_pair(self, pair, encrypt=True):
+        row1, col1 = self.find_position(pair[0])
+        row2, col2 = self.find_position(pair[1])
+
+        if row1 == row2:  
+            col1 = (col1 + 1) % 5 if encrypt else (col1 - 1) % 5
+            col2 = (col2 + 1) % 5 if encrypt else (col2 - 1) % 5
+        elif col1 == col2:  
+            row1 = (row1 + 1) % 5 if encrypt else (row1 - 1) % 5
+            row2 = (row2 + 1) % 5 if encrypt else (row2 - 1) % 5
+        else:  
+            col1, col2 = col2, col1
+
+        return self.matrix[row1][col1] + self.matrix[row2][col2]
+
+    def encrypt(self, plaintext):
+        pairs = self.preprocess_text(plaintext)
+        return "".join(self.encrypt_decrypt_pair(pair, encrypt=True) for pair in pairs)
+
+    def decrypt(self, ciphertext):
+        pairs = self.preprocess_text(ciphertext, encrypt=False)
+        return "".join(self.encrypt_decrypt_pair(pair, encrypt=False) for pair in pairs)
+
+
+
+if __name__ == "__main__":
+    keyword = input("Enter the keyword: ")
+    cipher = PlayfairCipher(keyword)
+    cipher.display_matrix()
+
+    while True:
+        choice = input("Choose an option: (E)ncrypt, (D)ecrypt, or (Q)uit: ").upper()
+        if choice == "E":
+            plaintext = input("Enter plaintext: ")
+            encrypted_text = cipher.encrypt(plaintext)
+            print("Encrypted text:", encrypted_text)
+        elif choice == "D":
+            ciphertext = input("Enter ciphertext: ")
+            decrypted_text = cipher.decrypt(ciphertext)
+            print("Decrypted text:", decrypted_text)
+        elif choice == "Q":
+            print("Exiting program.")
+            break
+        else:
+            print("Invalid option. Please try again.")
