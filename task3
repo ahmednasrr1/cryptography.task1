@@ -1,0 +1,41 @@
+import collections
+
+ENGLISH_LETTER_FREQUENCY = "ETAOINSHRDLCUMWFGYPBVKJXQZ"
+
+def frequency_analysis(ciphertext):
+    ciphertext = ciphertext.upper()
+    letter_counts = collections.Counter(c for c in ciphertext if c.isalpha())
+
+    sorted_ciphertext_letters = [pair[0] for pair in letter_counts.most_common()]
+
+    mapping = {}
+    for i in range(min(len(sorted_ciphertext_letters), len(ENGLISH_LETTER_FREQUENCY))):
+        mapping[sorted_ciphertext_letters[i]] = ENGLISH_LETTER_FREQUENCY[i]
+
+    return mapping
+
+def decrypt_using_mapping(ciphertext, mapping):
+    decrypted_text = ""
+    for char in ciphertext:
+        if char.upper() in mapping:
+            decrypted_char = mapping[char.upper()]
+            decrypted_text += decrypted_char.lower() if char.islower() else decrypted_char
+        else:
+            decrypted_text += char  
+    return decrypted_text
+
+def main():
+    
+    ciphertext = input("Enter the encrypted text: ")
+
+    mapping = frequency_analysis(ciphertext)
+
+    estimated_plaintext = decrypt_using_mapping(ciphertext, mapping)
+
+    print("\nEstimated Letter Mapping:")
+    print(mapping)
+    print("\nPossible Decryption Attempt:")
+    print(estimated_plaintext)
+
+if __name__ == "__main__":
+    main()
